@@ -8,7 +8,21 @@ const require = createRequire(import.meta.url);
 const mongoose = require('mongoose');
 const bcrypt   = require('bcryptjs');
 
-const MONGODB_URI = 'mongodb://127.0.0.1:27017/stocks-flow-system';
+import { readFileSync, existsSync } from 'fs';
+
+// Load .env.local
+const envPath = new URL('.env.local', import.meta.url).pathname;
+if (existsSync(envPath)) {
+  const lines = readFileSync(envPath, 'utf-8').split('\n');
+  for (const line of lines) {
+    const [key, ...rest] = line.split('=');
+    if (key && rest.length > 0) {
+      process.env[key.trim()] = rest.join('=').trim();
+    }
+  }
+}
+
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/stocks-flow-system';
 
 const UserSchema = new mongoose.Schema({
   storeName: String, ownerName: String, phone: String, address: String,
