@@ -13,9 +13,10 @@ export const authConfig: NextAuthConfig = {
       const isLoginPage = nextUrl.pathname === '/login';
       const isApiAuth = nextUrl.pathname.startsWith('/api/auth');
       const isSetupApi = nextUrl.pathname === '/api/setup';
+      const isDiagnostic = nextUrl.pathname === '/api/diagnostic';
 
-      // Always allow auth and setup endpoints
-      if (isApiAuth || isSetupApi) return true;
+      // Always allow auth, setup and diagnostic endpoints
+      if (isApiAuth || isSetupApi || isDiagnostic) return true;
 
       // Redirect unauthenticated users to login
       if (!isLoggedIn && !isLoginPage) return false;
