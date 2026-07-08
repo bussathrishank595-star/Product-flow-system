@@ -10,6 +10,7 @@ export async function GET() {
     return NextResponse.json({
       status: 'Connected successfully',
       uri_configured: !!process.env.MONGODB_URI,
+      masked_uri: process.env.MONGODB_URI ? process.env.MONGODB_URI.replace(/:([^:@]+)@/, ':***@') : null,
       user_count: count,
       users: users
     });
