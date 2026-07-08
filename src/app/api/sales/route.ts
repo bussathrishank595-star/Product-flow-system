@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
           categoryId: generalCategory._id,
           unit: item.unit || 'pcs',
           sellingPrice: Number(item.priceSold || 0),
-          avgCostPrice: 0,
+          avgCostPrice: Number(item.costPrice || 0),
           currentStock: Number(item.qtySold),
           lowStockThreshold: 5,
         });
@@ -86,8 +86,9 @@ export async function POST(req: NextRequest) {
     if (!product) continue;
 
     const finalPrice = item.priceSold !== undefined && item.priceSold !== null ? Number(item.priceSold) : product.sellingPrice;
+    const finalCost = item.costPrice !== undefined && item.costPrice !== null ? Number(item.costPrice) : product.avgCostPrice;
     const lineTotal = item.qtySold * finalPrice;
-    const lineCost = item.qtySold * product.avgCostPrice;
+    const lineCost = item.qtySold * finalCost;
 
     transactionItems.push({
       productId: product._id,
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest) {
       unit: product.unit,
       qtySold: item.qtySold,
       unitPriceSnapshot: finalPrice,
-      unitCostSnapshot: product.avgCostPrice,
+      unitCostSnapshot: finalCost,
       lineTotal,
     });
 

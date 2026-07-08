@@ -27,7 +27,7 @@ interface BillItem {
   priceSold: string;
   qtySold: string;
   unit: string;
-  avgCostPrice: number;
+  priceBought: string;
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -36,7 +36,7 @@ export default function LogSalePage() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [billItems, setBillItems] = useState<BillItem[]>([
-    { id: '1', name: '', priceSold: '', qtySold: '1', unit: 'pcs', avgCostPrice: 0 }
+    { id: '1', name: '', priceSold: '', qtySold: '1', unit: 'pcs', priceBought: '' }
   ]);
   const [focusedRowId, setFocusedRowId] = useState<string | null>(null);
   const [showRowDropdown, setShowRowDropdown] = useState(false);
@@ -77,14 +77,14 @@ export default function LogSalePage() {
   const handleAddRow = () => {
     setBillItems(prev => [
       ...prev,
-      { id: generateId(), name: '', priceSold: '', qtySold: '1', unit: 'pcs', avgCostPrice: 0 }
+      { id: generateId(), name: '', priceSold: '', qtySold: '1', unit: 'pcs', priceBought: '' }
     ]);
   };
 
   const handleRemoveRow = (id: string) => {
     setBillItems(prev => {
       const filtered = prev.filter(row => row.id !== id);
-      return filtered.length === 0 ? [{ id: generateId(), name: '', priceSold: '', qtySold: '1', unit: 'pcs', avgCostPrice: 0 }] : filtered;
+      return filtered.length === 0 ? [{ id: generateId(), name: '', priceSold: '', qtySold: '1', unit: 'pcs', priceBought: '' }] : filtered;
     });
   };
 
@@ -110,7 +110,7 @@ export default function LogSalePage() {
           name: p.name,
           priceSold: String(p.sellingPrice),
           unit: p.unit,
-          avgCostPrice: p.avgCostPrice,
+          priceBought: String(p.avgCostPrice),
         };
       }
       return row;
@@ -120,7 +120,7 @@ export default function LogSalePage() {
   };
 
   const grandTotal = billItems.reduce((sum, item) => sum + (Number(item.priceSold || 0) * Number(item.qtySold || 0)), 0);
-  const totalProfit = billItems.reduce((sum, item) => sum + ((Number(item.priceSold || 0) - item.avgCostPrice) * Number(item.qtySold || 0)), 0);
+  const totalProfit = billItems.reduce((sum, item) => sum + ((Number(item.priceSold || 0) - Number(item.priceBought || 0)) * Number(item.qtySold || 0)), 0);
 
   const handleSubmit = async () => {
     const validItems = billItems.filter(item => item.name.trim() !== '');
@@ -151,9 +151,9 @@ export default function LogSalePage() {
       body: JSON.stringify({
         items: validItems.map(item => {
           if (item.productId) {
-            return { productId: item.productId, qtySold: Number(item.qtySold), priceSold: Number(item.priceSold) };
+            return { productId: item.productId, qtySold: Number(item.qtySold), priceSold: Number(item.priceSold), costPrice: Number(item.priceBought || 0) };
           } else {
-            return { customName: item.name, qtySold: Number(item.qtySold), priceSold: Number(item.priceSold), unit: item.unit };
+            return { customName: item.name, qtySold: Number(item.qtySold), priceSold: Number(item.priceSold), unit: item.unit, costPrice: Number(item.priceBought || 0) };
           }
         }),
         notes,
@@ -234,7 +234,7 @@ export default function LogSalePage() {
             name: finalProduct.name,
             priceSold: String(finalProduct.sellingPrice),
             unit: finalProduct.unit,
-            avgCostPrice: finalProduct.avgCostPrice,
+            priceBought: String(finalProduct.avgCostPrice),
           } : row);
         } else {
           return [...prev, {
@@ -244,7 +244,7 @@ export default function LogSalePage() {
             priceSold: String(finalProduct.sellingPrice),
             qtySold: '1',
             unit: finalProduct.unit,
-            avgCostPrice: finalProduct.avgCostPrice,
+            priceBought: String(finalProduct.avgCostPrice),
           }];
         }
       });
@@ -278,7 +278,7 @@ export default function LogSalePage() {
             Est. Profit: ₹{totalProfit.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-            <button className="btn btn-secondary" onClick={() => { setBillItems([{ id: '1', name: '', priceSold: '', qtySold: '1', unit: 'pcs', avgCostPrice: 0 }]); setNotes(''); setConfirmed(false); }}>
+            <button className="btn btn-secondary" onClick={() => { setBillItems([{ id: '1', name: '', priceSold: '', qtySold: '1', unit: 'pcs', priceBought: '' }]); setNotes(''); setConfirmed(false); }}>
               🧾 Log Another Sale
             </button>
             <button className="btn btn-primary" onClick={() => router.push('/dashboard')}>
@@ -320,7 +320,8 @@ export default function LogSalePage() {
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border)', textAlign: 'left' }}>
                   <th style={{ padding: '8px 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-muted)' }}>PRODUCT NAME</th>
-                  <th style={{ padding: '8px 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', width: 100 }}>PRICE (₹)</th>
+                  <th style={{ padding: '8px 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', width: 85 }}>BUY (₹)</th>
+                  <th style={{ padding: '8px 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', width: 85 }}>SELL (₹)</th>
                   <th style={{ padding: '8px 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', width: 80 }}>QTY</th>
                   <th style={{ padding: '8px 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', width: 90 }}>UNIT</th>
                   <th style={{ padding: '8px 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', width: 100, textAlign: 'right' }}>SUBTOTAL</th>
@@ -381,6 +382,18 @@ export default function LogSalePage() {
                             )}
                           </div>
                         )}
+                      </td>
+                      <td style={{ padding: '8px 4px' }}>
+                        <input
+                          className="form-input"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          style={{ textAlign: 'center', fontWeight: 600, color: 'var(--text-muted)' }}
+                          value={item.priceBought}
+                          onChange={e => handleUpdateRow(item.id, 'priceBought', e.target.value)}
+                        />
                       </td>
                       <td style={{ padding: '8px 4px' }}>
                         <input
